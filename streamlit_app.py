@@ -3,7 +3,7 @@ import streamlit as st
 import pydeck as pdk
 import pandas as pd
 import h3
-# # Download the file (e.g., 'data_KJ.csv') to the current directory
+# # Download the file (e.g., 'data_kWh.csv') to the current directory
 # Check
 # *** Data laden met caching ***
 @st.cache_data
@@ -24,27 +24,41 @@ df = load_data()
 
 # Manual formatter
 def format_dutch_number(num, decimals=2):
+    """
+    Wordt alleen gebruikt aan het einde om de tegels in de juiste format (Dutch) te weergeven.
+    In deze functie wordt het Engelse format omgezet naar de Dutch format.
+    """
     if isinstance(num, int):
         return f"{num:,}".replace(",", ".")
     return f"{num:,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 def show_dutch_metric(value):
+    """
+    Laat de Dutch format zien. Kan ook worden gebruikt voor andere cijfers.
+    """
     formatted = format_dutch_number(value)
     st.metric(formatted)
 
 # Alleen relevante kolommen inladen
+## Selecteer hier de relevante kolommen die je wilt meenemen. SBI worden hier niet weergegeven. 
 df = df[["aantal_VBOs", "totale_oppervlakte", "woonplaats", "Energieklasse", 
          "latitude", "longitude", "bouwjaar", "pandstatus",
          "kWh_per_m2", "gemiddeld_jaarverbruik", "Dataset", "gemiddeld_jaarverbruik_mWh"]]
 
+## Dataset wordt gefilterd op pandstatus die in gebruik zijn.
 df = df[df["pandstatus"] == "Pand in gebruik"]
 
-#%%
 # *** Dynamische H3-resolutie bepalen op basis van zoomniveau ***
 def get_dynamic_resolution(zoom_level):
+    """
+    Pakt het zoom niveau van de slider om dynamisch de h3_index steeds opnieuw te berekenen en te weergeven op de kaart.
+    """
     return zoom_level  # Directe koppeling van zoomniveau aan resolutie
 
 def get_dynamic_line_width(zoom_level):
+    """
+    Wordt niet gebruikt maar wel handig voor later als je lijn diktes wilt aanpassen afhankelijk van het zoom niveau.
+    """
     if zoom_level >= 15:
         return 0  # Verwijder de lijn bij hogere zoomniveaus
     elif 12 <= zoom_level <= 14:
@@ -57,6 +71,7 @@ def get_dynamic_line_width(zoom_level):
         return 0
 
 # *** Kleurmapping Legenda ***
+## De waarde 255 staat voor maximale transparantie. Deze keuze is gemaakt zodat de onderliggende laag niet zichtbaar is in de visualisatie.
 colorbrewer_colors = [
     [69, 117, 180, 255], # Donkerblauw (Geen potentie)
     [254, 224, 144, 255], # Lichtoranje (Goede potentie)
@@ -64,6 +79,12 @@ colorbrewer_colors = [
 ]
 
 def get_color(value):
+    """
+    Wanneer je dit aanpast de bins. Pas dan ook de legenda aan!
+    - Donkerblauw is nu kleiner dan 10
+    - Lichtoranje is tussen 10 en 50
+    - Rood is boven 50
+    """
     bins = [10, 50]
     for i, threshold in enumerate(bins):
         if value < threshold:
@@ -75,6 +96,11 @@ df["color"] = df["kWh_per_m2"].apply(get_color)
 # *** Berekening H3 hexagoon in km ***
 # Functie om de hexagon grootte te bepalen
 def get_hexagon_size(zoom_level):
+    """
+    hexagon sizes zijn gebasseerd op Mapbox zie uitleg over zoomniveau.
+    Deze functie returned de km bij elk zoomniveau. 
+    Voor de warmetevraagkaart is alleen zoomniveau 9 tot 12 weergegeven. De anderen staan er nog in just in case.
+    """
     hexagon_sizes = {
         1: 5000, 2: 2500, 3: 1500, 4: 700, 5: 350, 6: 175, 7: 90,
         8: 35, 9: 17, 10: 8, 11: 4, 12: 2, 13: 1, 14: 0.5, 15: 0.2
@@ -153,6 +179,17 @@ grenswaarde = st.sidebar.number_input(
     step=1
 )
 
+with st.sidebar.expander("ℹ Wat doet de grenswaarde?"):
+    st.write(
+        "*Pas de grenswaarde bovenin aan om te bepalen welk verbruik jij als grens van ‘extra aandacht’ ziet.* \n\n"
+        "**Kleuren in de kaart betekenen:**\n"
+        "- **< 10,0 kWh/m²** – Geen potentie (blauw)\n"
+        "- **10,0 – 50,0 kWh/m²** – Goede potentie (geel)\n"
+        "- **50,0 – grenswaarde** – Zeer hoge potentie (rood)\n"
+        "- **> grenswaarde** – Aandachtsgebied (groen)\n\n"
+        "Alles boven de grenswaarde wordt als groen weergegeven op de kaart."
+    )
+
 # *** Energieklasse ***
 df["Energieklasse"] = df["Energieklasse"].fillna("Onbekend")  # Vervang NaN door 'Onbekend'
 energieklassen = df["Energieklasse"].unique()
@@ -200,6 +237,16 @@ pand_selectie = st.sidebar.selectbox(
 # Filter de DataFrame
 if pand_selectie != "Alle types":
     df = df[df["Dataset"] == pand_selectie]
+
+with st.sidebar.expander("ℹ Uitleg over type pand"):
+    st.write(
+        "Hier kun je een specifiek type pand selecteren om alleen die gegevens op de kaart te tonen. "
+        "Standaard staan alle types aan.\n\n"
+        "**Beschikbare types:**\n"
+        "- **Liander / Stedin** – Kleinverbruik (woningen)\n"
+        "- **Verrijkte BAG** – Middel- tot grootverbruik \n"
+        "- **Alliander** – Middel- tot grootverbruik\n"
+    )
 
 # *** 2D/3D-weergave ***
 extruded = st.sidebar.toggle("3D Weergave", value=False)
@@ -249,6 +296,8 @@ if st.sidebar.button("Maak Kaart"):
     st.session_state.show_map = True
 
 # **Als de kaart moet worden weergegeven**
+## Dit wordt niet gebruikt. Voor 1-7 heb ik een percentage genomen van de totale dataset (voorkomen dat het laden traag wordt).
+## Voor de huidige kaart wordt de totale dataset gebruikt.
 if st.session_state.show_map:
     # Data filtering per zoomniveau
     if zoom_level <= 3:
@@ -318,6 +367,9 @@ if st.session_state.show_map:
 
     # Laag voor indicatieve aandachtsgebieden
     def create_indicative_area_layer():
+        """
+        Laag die op de create_layer laag zal komen. Dit is de potentielaag weergegeven in groen.
+        """
         return pdk.Layer(
             "H3HexagonLayer",
             df_filtered_area[df_filtered_area["indicatief_aandachtsgebied"] == True],
@@ -333,6 +385,10 @@ if st.session_state.show_map:
 
     # Functie om de H3 laag aan te maken
     def create_layer(visible, elevation_scale):
+        """
+        Dit is de laag die onder create_indicative_area_layer staat. 
+        Dit zijn de waarden uit de legenda.
+        """
         return pdk.Layer(
             "H3HexagonLayer",
             df_filtered,
@@ -373,6 +429,7 @@ if st.session_state.show_map:
     # else:
     #     adjusted_zoom_level = zoom_level  # Gebruik het werkelijke zoomniveau voor zoomniveaus boven 15
 
+    # *** De kaart plaatsen en weergeven ***
     st.session_state.view_state = pdk.ViewState(
         longitude=df["longitude"].mean(),
         latitude=df["latitude"].mean(),
@@ -384,6 +441,8 @@ if st.session_state.show_map:
     )
 
     # *Tooltip op de kaart*
+    # if else statement is hier gebruikt om bij een iets hogere zoomniveau meer details te laten zien.
+    # Voor nu is dit gelijk. Voor in de toekomst mocht je op straat niveau dingen wil laten zien dan kan je adres toevoegen bijv.
     if zoom_level >= 11:
         tooltip_html = """
             <b>Woonplaats:</b> {woonplaats}<br>
