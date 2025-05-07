@@ -73,9 +73,9 @@ def get_dynamic_line_width(zoom_level):
 # *** Kleurmapping Legenda ***
 ## De waarde 255 staat voor maximale transparantie. Deze keuze is gemaakt zodat de onderliggende laag niet zichtbaar is in de visualisatie.
 colorbrewer_colors = [
-    [69, 117, 180, 255], # Donkerblauw (Geen potentie)
-    [254, 224, 144, 255], # Lichtoranje (Goede potentie)
-    [215, 48, 39, 255] # Rood (Zeer hoge potentie)
+    [69, 117, 180, 150], # Donkerblauw (Geen potentie)
+    [254, 224, 144, 150], # Lichtoranje (Goede potentie)
+    [215, 48, 39, 150] # Rood (Zeer hoge potentie)
 ]
 
 def get_color(value):
@@ -377,7 +377,7 @@ if st.session_state.show_map:
             filled=True,
             extruded=extruded,
             get_hexagon="h3_index",
-            get_fill_color=[58, 27, 47],
+            get_fill_color=[58, 27, 47, 200],
             get_line_color=[0, 0, 0, 0],
             get_line_width=get_dynamic_line_width(zoom_level),
             visible=True
