@@ -182,11 +182,11 @@ grenswaarde = st.sidebar.number_input(
 with st.sidebar.expander("ℹ Wat doet de grenswaarde?"):
     st.write(
         "*Pas de grenswaarde bovenin aan om te bepalen welk verbruik jij als grens van ‘extra aandacht’ ziet.* \n\n"
-        "**Kleuren in de kaart betekenen:**\n"
-        "- **< 10,0 kWh/m²** – Geen potentie (blauw)\n"
-        "- **10,0 – 50,0 kWh/m²** – Goede potentie (geel)\n"
-        "- **50,0 – grenswaarde** – Zeer hoge potentie (rood)\n"
-        "- **> grenswaarde** – Aandachtsgebied (groen)\n\n"
+        "**Kleuren in de kaart latten zien:**\n"
+        "- **< 10,0 kWh/m²** – lage warmtevraag (blauw)\n"
+        "- **10,0 – 50,0 kWh/m²** – gemiddelde warmtevraag (geel)\n"
+        "- **50,0 – grenswaarde** – hoge warmtevraag (rood)\n"
+        "- **> grenswaarde** – Aandachtsgebied (donkerpaars)\n\n"
         "Alles boven de grenswaarde wordt als groen weergegeven op de kaart."
     )
 
@@ -240,11 +240,11 @@ if pand_selectie != "Alle types":
 
 with st.sidebar.expander("ℹ Uitleg over type pand"):
     st.write(
-        "Hier kun je een specifiek type pand selecteren om alleen die gegevens op de kaart te tonen. "
+        "Hier kun je een specifiek type pand (bron van de data) selecteren om alleen die gegevens op de kaart te tonen. "
         "Standaard staan alle types aan.\n\n"
-        "**Beschikbare types:**\n"
+        "**Beschikbare datalagen:**\n"
         "- **Liander / Stedin** – Kleinverbruik (woningen)\n"
-        "- **Verrijkte BAG** – Middel- tot grootverbruik \n"
+        "- **Verrijkte BAG (TNO)** – Middel- tot grootverbruik \n"
         "- **Alliander** – Middel- tot grootverbruik\n"
     )
 
@@ -377,7 +377,7 @@ if st.session_state.show_map:
             filled=True,
             extruded=extruded,
             get_hexagon="h3_index",
-            get_fill_color=[26, 152, 80],
+            get_fill_color=[58, 27, 47],
             get_line_color=[0, 0, 0, 0],
             get_line_width=get_dynamic_line_width(zoom_level),
             visible=True
@@ -577,7 +577,7 @@ if st.session_state.show_map:
             <div><span class="color-box" style="background-color: #4575b4;"></span> &lt; 10,0 </div>
             <div><span class="color-box" style="background-color: #fee090;"></span> 10,0 - 50,0 </div>
             <div><span class="color-box" style="background-color: #d73027;"></span> 50,0 - {grenswaarde} (grenswaarde) </div>
-            <div><span class="color-box" style="background-color: #1a9850;"></span> Potentie grenswaarde: {grenswaarde} </div>
+            <div><span class="color-box" style="background-color: #3A1B2f;"></span> Potentie grenswaarde: {grenswaarde} </div>
         </div>
     """
     st.markdown(legend_html, unsafe_allow_html=True)
