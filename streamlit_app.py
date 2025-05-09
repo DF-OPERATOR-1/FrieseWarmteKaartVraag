@@ -111,7 +111,7 @@ def get_hexagon_size(zoom_level):
 st.markdown('<h1 style="font-size: 35px;">Friese Warmtevraagkaart (Heat Demand)</h1>', unsafe_allow_html=True)
 
 # Ondertitel
-st.markdown('<p style="font-size: 16px; margin-top: -10px;">De kaart laat gemiddelde jaarverbruik in 2024 zien van gas in m3, omgerekend naar kWh en mWh.</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-size: 16px; margin-top: -10px;">De kaart laat gemiddelde jaarverbruik in 2024 zien van gas in m3, omgerekend naar kWh en MWh.</p>', unsafe_allow_html=True)
 
 with st.expander("ℹ Wat is een H3 hexagoon?"):
     st.write("H3 is een hexagonaal raster dat gebieden verdeelt in zeshoeken van verschillende resoluties. "
@@ -450,7 +450,7 @@ if st.session_state.show_map:
             <b>Aantal VBO's:</b> {aantal_VBOs}<br>
             <b>Gemiddelde Energiegebruik:</b> {kWh_per_m2} kWh/m²<br>
             <b>Totale Oppervlakte:</b> {totale_oppervlakte} m²<br>
-            <b>Totale Heat Demand:</b> {gemiddeld_jaarverbruik_mWh} mWh<br>
+            <b>Totale Heat Demand:</b> {gemiddeld_jaarverbruik_mWh} MWh<br>
             <b>Gemiddelde Bouwjaar:</b> {bouwjaar} <br>
         """
     else:
@@ -460,7 +460,7 @@ if st.session_state.show_map:
             <b>Aantal VBO's:</b> {aantal_VBOs}<br>
             <b>Gemiddelde Energiegebruik:</b> {kWh_per_m2} kWh/m²<br>
             <b>Totale Oppervlakte:</b> {totale_oppervlakte} m²<br>
-            <b>Totale Heat Demand:</b> {gemiddeld_jaarverbruik_mWh} mWh<br>
+            <b>Totale Heat Demand:</b> {gemiddeld_jaarverbruik_mWh} MWh<br>
             <b>Gemiddelde Bouwjaar:</b> {bouwjaar} <br>
         """
 
@@ -529,7 +529,7 @@ if st.session_state.show_map:
                 <p>Aantal panden</p>
             </div>
             <div class="tile">
-                <h2>{totaal_heat_demand} mWh</h2>
+                <h2>{totaal_heat_demand} MWh</h2>
                 <p>Totale Heat Demand</p>
             </div>
         </div>
@@ -643,7 +643,7 @@ if st.session_state.show_map:
                 <p>Aantal Panden</p>
             </div>
             <div class="tile">
-                <h2>{heat_demand_formatted} mWh</h2>
+                <h2>{heat_demand_formatted} MWh</h2>
                 <p>Totale Heat Demand</p>
             </div>
         </div>
