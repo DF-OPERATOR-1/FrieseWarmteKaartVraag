@@ -111,7 +111,7 @@ def get_hexagon_size(zoom_level):
 st.markdown('<h1 style="font-size: 35px;">Friese Warmtevraagkaart (Heat Demand)</h1>', unsafe_allow_html=True)
 
 # Ondertitel
-st.markdown('<p style="font-size: 16px; margin-top: -10px;">De kaart laat gemiddelde jaarverbruik in 2024 zien van gas in m3, omgerekend naar kWh en MWh.</p>', unsafe_allow_html=True)
+st.markdown('<p style="font-size: 16px; margin-top: -10px;">De kaart laat het gemiddelde jaarverbruik in 2024 zien van gas in m3, omgerekend naar kWh en MWh.</p>', unsafe_allow_html=True)
 
 with st.expander("ℹ Wat is een H3 hexagoon?"):
     st.write("H3 is een hexagonaal raster dat gebieden verdeelt in zeshoeken van verschillende resoluties. "
@@ -429,11 +429,38 @@ if st.session_state.show_map:
     # else:
     #     adjusted_zoom_level = zoom_level  # Gebruik het werkelijke zoomniveau voor zoomniveaus boven 15
 
+    # Viewstate selectie woonplaatsen
+    def _view_for_selection(df_full, woonplaatsen_geselecteerd):
+        FRIESLAND_CENTER = (53.125, 5.75); FRIESLAND_ZOOM = 8
+        MIN_ZOOM, MAX_ZOOM = 8, 12.0
+        if not woonplaatsen_geselecteerd:
+            return FRIESLAND_CENTER[0], FRIESLAND_CENTER[1], FRIESLAND_ZOOM
+        df_sel = df_full[df_full["woonplaats"].isin(woonplaatsen_geselecteerd)]
+        if df_sel.empty:
+            return FRIESLAND_CENTER[0], FRIESLAND_CENTER[1], FRIESLAND_ZOOM
+        lat_center = float(df_sel["latitude"].mean()); lon_center = float(df_sel["longitude"].mean())
+        if len(woonplaatsen_geselecteerd) == 1:
+            return lat_center, lon_center, 12.0
+        lat_min, lat_max = float(df_sel["latitude"].min()), float(df_sel["latitude"].max())
+        lon_min, lon_max = float(df_sel["longitude"].min()), float(df_sel["longitude"].max())
+        lat_span = max(0.0001, lat_max - lat_min); lon_span = max(0.0001, lon_max - lon_min)
+        span = max(lat_span, lon_span)
+        if      span > 2.0: zoom = 8.0
+        elif    span > 1.0: zoom = 8.0
+        elif    span > 0.5: zoom = 9.0
+        elif    span > 0.25: zoom = 9.0
+        elif    span > 0.12: zoom = 10.0
+        else:                zoom = 11.0
+        zoom = max(MIN_ZOOM, min(MAX_ZOOM, zoom))
+        return lat_center, lon_center, zoom
+    
+    lat, lon, zoom = _view_for_selection(df, woonplaats_selectie)
+
     # *** De kaart plaatsen en weergeven ***
     st.session_state.view_state = pdk.ViewState(
-        longitude=df["longitude"].mean(),
-        latitude=df["latitude"].mean(),
-        zoom=zoom_level,  
+        longitude=lon,
+        latitude=lat,
+        zoom=zoom,  
         min_zoom=1,  
         max_zoom=18,  
         pitch=0,
