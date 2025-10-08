@@ -436,7 +436,7 @@ if st.session_state.show_map:
         zoom=zoom_level,  
         min_zoom=1,  
         max_zoom=18,  
-        pitch=40.5,
+        pitch=0,
         bearing=0,
     )
 
